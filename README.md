@@ -1,6 +1,6 @@
 # Bank Customer Churn — Oracle SQL Layihəsi
 
-Bu repo **Bank Customer Churn** mövzusunda Oracle SQL layihəsini ehtiva edir. Layihədə tam **SQL skript**, cədvəl dizaynı, constraint-lər, index-lər, **MERGE** sinxronizasiya və **analitik/window** funksiyaları ilə hesabat tapşırıqları mövcuddur. Excel faylı ilkin dataset və import üçün istifadə olunur.
+Bu repo **Bank Customer Churn** mövzusunda Oracle SQL layihəsini ehtiva edir. Layihədə tam **SQL skript**, cədvəl dizaynı, constraint-lər, index-lər, **MERGE** sinxronizasiya və **analitik SQL sorğuları** yer alır.
 
 ---
 
@@ -48,6 +48,53 @@ MERGE üçün yenilənmiş siyahı
 - `credit_score`, `tenure`, `balance`
 - `products_number`, `credit_card`, `active_member`
 - `estimated_salary`, `churn`
+
+---
+
+## 🧩 ER Diagram (Vizual)
+
+```mermaid
+erDiagram
+    CUSTOMER_INFO {
+        NUMBER customer_id PK
+        VARCHAR2 name
+        VARCHAR2 surname
+        CHAR gender
+        NUMBER age
+        VARCHAR2 job
+        VARCHAR2 marital
+        VARCHAR2 education
+        VARCHAR2 country
+    }
+
+    CUSTOMER_CHURN_INFO {
+        NUMBER customer_id PK, FK
+        NUMBER credit_score
+        NUMBER tenure
+        NUMBER balance
+        NUMBER products_number
+        NUMBER credit_card
+        NUMBER active_member
+        NUMBER estimated_salary
+        NUMBER churn
+        NUMBER max_cre_amount
+    }
+
+    UPDATED_LIST {
+        NUMBER customer_id PK
+        NUMBER credit_score
+        NUMBER tenure
+        NUMBER balance
+        NUMBER products_number
+        NUMBER credit_card
+        NUMBER active_member
+        NUMBER estimated_salary
+        NUMBER churn
+    }
+
+    CUSTOMER_INFO ||--|| CUSTOMER_CHURN_INFO : has
+    CUSTOMER_CHURN_INFO ||--|| UPDATED_LIST : syncs
+```
 
 ---
 
@@ -114,12 +161,3 @@ Skript aşağıdakı analitik hesabatları ehtiva edir:
 ## 👤 Müəllif
 
 **Mahammad Rasulov**
-
----
-
-### Əlavə Təkliflər
-
-Əlavə inkişaf üçün:
-- ER diagram (draw.io) əlavə etmək
-- Analitik nəticələri ayrıca `report.sql` faylında bölmək
-- Dataset üçün data dictionary yaratmaq
