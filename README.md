@@ -1,102 +1,102 @@
-# 🏦 Bank Customer Churn — Oracle SQL Layihəsi
+# 🏦 Bank Customer Churn — Oracle SQL Project
 
-Bu repo bank müştərilərinin **churn (bankı tərk etmə) davranışını** analiz edən **Oracle SQL** layihəsini ehtiva edir. Layihədə tam **cədvəl dizaynı**, **constraint-lər**, **index-lər**, **MERGE** sinxronizasiyası və **18+ analitik query** istifadə olunur.
+This repository contains a comprehensive **Oracle SQL project** analyzing **bank customer churn behavior**. The project includes complete **table design**, **constraints**, **indexes**, **window functions**, and **analytical queries**.
 
-**Texnoloji Stack:** Oracle SQL | DDL/DML | Window Functions (RANK, DENSE_RANK, ROW_NUMBER, LAG, LEAD) | MERGE | Subqueries | Composite Indexes | SEQUENCES
+**Technology Stack:** Oracle SQL | DDL/DML | Window Functions (RANK, DENSE_RANK, ROW_NUMBER, LAG, LEAD) | MERGE | Subqueries | Composite Indexes | SEQUENCES
 
 ---
 
-## 📁 Layihə Struktur
+## 📁 Project Structure
 
 ```
 bank-customer-churn/
-├── PROJECT MAIN.sql                              # Əsas SQL skripti (DDL, DML, MERGE, analitik queries)
-├── sql Bank Customer Churn Prediction _lst.xlsx  # Excel dataset (import üçün)
-├── README.md                                      # Layihə sənədi (bu fayldır)
-└── [Digər resurslar]
+├── PROJECT MAIN.sql                              # Main SQL script (DDL, DML, MERGE, analytical queries)
+├── sql Bank Customer Churn Prediction _lst.xlsx  # Excel dataset (for import)
+├── README.md                                      # Project documentation (this file)
+└── [Additional resources]
 ```
 
 ---
 
-## 🎯 Layihənin Məqsədi
+## 🎯 Project Objectives
 
-Bu layihə aşağıdakı **SQL texnikalarının praktiki tətbiqini** göstərir:
+This project demonstrates the practical application of the following **SQL techniques:**
 
-✅ **Məlumat Modeli Dizaynı** — ERD, Primary Key, Foreign Key, Constraints  
-✅ **Performans Optimallaşdırılması** — Composite Index-lər, Execution Plans  
-✅ **Data Sinxronizasiyası** — MERGE amaliyyatı (INSERT/UPDATE)  
-✅ **Analitik Hesabatlar** — Window Functions, Aggregations, CTE (WITH clause)  
-✅ **Data Integriteyi** — CHECK Constraints, Referential Integrity  
-✅ **Audit Sistemi** — SEQUENCES for Transaction IDs  
-
----
-
-## 🗂️ Məlumat Modeli (3 Cədvəl)
-
-### 1️⃣ `CUSTOMER_INFO` — Müştəri Demoqrafiyası
-
-**Məqsəd:** Müştərinin şəxsi və demoqrafik məlumatlarını saxlamaq
-
-| Sütun | Tip | Məhdudiyyət | Açıqlanması |
-|-------|-----|-------------|------------|
-| `customer_id` | NUMBER(10) | **PRIMARY KEY** | Müştərinin unikal identifikatoru |
-| `name` | VARCHAR2(50) | NOT NULL | Ad |
-| `surname` | VARCHAR2(50) | NOT NULL | Soyad |
-| `gender` | CHAR(1) | CHECK (M/F) | Cins: **M** = Kişi, **F** = Qadın |
-| `age` | NUMBER(3) | CHECK (18-100) | Yaş (18-100 aralığında) |
-| `job` | VARCHAR2(50) | - | Peşə |
-| `marital` | VARCHAR2(20) | CHECK (married/single/divorced) | Ailə vəziyyəti |
-| `education` | VARCHAR2(20) | CHECK (primary/secondary/tertiary/unknown) | Təhsil səviyyəsi |
-| `country` | VARCHAR2(50) | NOT NULL | Ölkə (France, Germany, Spain) |
-
-**Index-lər:**
-- `idx_cust_country_gender` — Composite index (ölkə + cins üzrə axtarış)
-- `idx_cust_age` — Yaş üzrə axtarış
-
-**Məlumat Həcmi:** ~10,000 müştəri
+✅ **Data Model Design** — ERD, Primary Key, Foreign Key, Constraints  
+✅ **Performance Optimization** — Composite Indexes, Execution Plans  
+✅ **Data Synchronization** — MERGE operation (INSERT/UPDATE)  
+✅ **Analytical Reports** — Window Functions, Aggregations, CTE (WITH clause)  
+✅ **Data Integrity** — CHECK Constraints, Referential Integrity  
+✅ **Audit System** — SEQUENCES for Transaction IDs
 
 ---
 
-### 2️⃣ `CUSTOMER_CHURN_INFO` — Churn & Maliyyə Göstəriciləri
+## 🗂️ Data Model (3 Tables)
 
-**Məqsəd:** Müştərinin churn statusu və maliyyə məlumatlarını saxlamaq
+### 1️⃣ `CUSTOMER_INFO` — Customer Demographics
 
-| Sütun | Tip | Məhdudiyyət | Açıqlanması |
-|-------|-----|-------------|------------|
+**Purpose:** Store customer personal and demographic information
+
+| Column | Type | Constraint | Description |
+|--------|------|-----------|------------|
+| `customer_id` | NUMBER(10) | **PRIMARY KEY** | Unique customer identifier |
+| `name` | VARCHAR2(50) | NOT NULL | First name |
+| `surname` | VARCHAR2(50) | NOT NULL | Last name |
+| `gender` | CHAR(1) | CHECK (M/F) | Gender: **M** = Male, **F** = Female |
+| `age` | NUMBER(3) | CHECK (18-100) | Age (range 18-100) |
+| `job` | VARCHAR2(50) | — | Occupation |
+| `marital` | VARCHAR2(20) | CHECK (married/single/divorced) | Marital status |
+| `education` | VARCHAR2(20) | CHECK (primary/secondary/tertiary/unknown) | Education level |
+| `country` | VARCHAR2(50) | NOT NULL | Country (France, Germany, Spain) |
+
+**Indexes:**
+- `idx_cust_country_gender` — Composite index (country + gender search)
+- `idx_cust_age` — Age-based search
+
+**Data Volume:** ~10,000 customers
+
+---
+
+### 2️⃣ `CUSTOMER_CHURN_INFO` — Churn & Financial Indicators
+
+**Purpose:** Store customer churn status and financial information
+
+| Column | Type | Constraint | Description |
+|--------|------|-----------|------------|
 | `customer_id` | NUMBER(10) | **PK, FK** | FK → customer_info |
-| `credit_score` | NUMBER(5) | CHECK (300-850) | Kredit balı (FICO skalası) |
-| `tenure` | NUMBER(3) | CHECK (≥ 0) | Bankda keçən il |
-| `balance` | NUMBER(15,2) | CHECK (≥ 0) | Hesab balansi |
-| `products_number` | NUMBER(2) | CHECK (1-4) | Banka rəğbət sayı |
-| `credit_card` | NUMBER(1) | CHECK (0/1) | Kredit kartı var? (1=var, 0=yox) |
-| `active_member` | NUMBER(1) | CHECK (0/1) | Aktiv üzv? (1=aktiv, 0=passiv) |
-| `estimated_salary` | NUMBER(15,2) | - | Təxmin edilən maaş |
-| `churn` | NUMBER(1) | CHECK (0/1) | **Churn Flagi:** 1=Bankı tərk etdi, 0=Qaldı |
-| `max_cre_amount` | NUMBER(15,2) | DEFAULT NULL | Maksimum kredit məbləği (Task 4) |
+| `credit_score` | NUMBER(5) | CHECK (300-850) | Credit score (FICO scale) |
+| `tenure` | NUMBER(3) | CHECK (≥ 0) | Years as customer |
+| `balance` | NUMBER(15,2) | CHECK (≥ 0) | Account balance |
+| `products_number` | NUMBER(2) | CHECK (1-4) | Number of products with bank |
+| `credit_card` | NUMBER(1) | CHECK (0/1) | Has credit card? (1=yes, 0=no) |
+| `active_member` | NUMBER(1) | CHECK (0/1) | Active member? (1=active, 0=inactive) |
+| `estimated_salary` | NUMBER(15,2) | — | Estimated salary |
+| `churn` | NUMBER(1) | CHECK (0/1) | **Churn Flag:** 1=Left bank, 0=Remained |
+| `max_cre_amount` | NUMBER(15,2) | DEFAULT NULL | Maximum credit amount (Task 4) |
 
-**Index-lər (5 adet):**
-- `idx_churn_flag` — Churn üzrə filter
-- `idx_active_member` — Aktiv üzü axtarış
-- `idx_salary` — Maaş üzrə sort/filter
-- `idx_balance` — Balans üzrə sort/filter
-- `idx_churn_balance` — Composite (churn + balans DESC) — **TOP 10 queries üçün optimal**
+**Indexes (5 total):**
+- `idx_churn_flag` — Churn-based filtering
+- `idx_active_member` — Active member search
+- `idx_salary` — Salary sorting/filtering
+- `idx_balance` — Balance sorting/filtering
+- `idx_churn_balance` — Composite (churn + balance DESC) — **Optimal for TOP 10 queries**
 
-**Performance:** 0.031–0.064 saniyə ortalama sorgu zamanı
+**Performance:** 0.031–0.064 seconds average query time
 
 ---
 
-### 3️⃣ `UPDATED_LIST` — MERGE üçün Yenilənmiş Siyahı
+### 3️⃣ `UPDATED_LIST` — Updated List for MERGE
 
-**Məqsəd:** Xarici mənbədən gələn yeni/yenilənmiş müştəri məlumatlarını saxlamaq
+**Purpose:** Store new/updated customer information from external sources
 
-| Sütun | Tip | Məqsəd |
-|-------|-----|-------|
-| Hamısı `customer_churn_info` ilə eyni | - | MERGE source cədvəli |
+| Column | Type | Purpose |
+|--------|------|---------|
+| All | Same as `customer_churn_info` | — | MERGE source table |
 
-**Əhəmiyyət:** 
-- FK constraint yoxdur (xarici mənbə üçün)
-- MERGE operasiyası ilə `customer_churn_info`-ya sinxronize edilir
-- Yeni ID-lər əvvəlcə `customer_info`-ya insert edilməlidir
+**Importance:**
+- No FK constraint (for external sources)
+- Synchronized with `customer_churn_info` via MERGE operation
+- New IDs must first be inserted into `customer_info`
 
 ---
 
@@ -105,7 +105,7 @@ Bu layihə aşağıdakı **SQL texnikalarının praktiki tətbiqini** göstərir
 ```
 ┌──────────────────────────┐
 │    CUSTOMER_INFO         │
-│  (Demoqrafiya Cədvəli)   │
+│  (Demographics Table)    │
 ├──────────────────────────┤
 │ PK | customer_id         │
 │    | name, surname       │
@@ -119,7 +119,7 @@ Bu layihə aşağıdakı **SQL texnikalarının praktiki tətbiqini** göstərir
                │ FK: customer_id
 ┌──────────────▼─────────────────────────┐
 │  CUSTOMER_CHURN_INFO                   │
-│  (Churn & Maliyyə Məlumatları Cədvəli) │
+│  (Churn & Financial Data Table)        │
 ├────────────────────────────────────────┤
 │ PK | customer_id                       │
 │    | credit_score (300-850)            │
@@ -135,27 +135,27 @@ Bu layihə aşağıdakı **SQL texnikalarının praktiki tətbiqini** göstərir
                │
 ┌──────────────┴────────────────────┐
 │      UPDATED_LIST                  │
-│ (Yenilənmiş/Bərzənd Siyahı)       │
+│ (Updated/Fresh Data List)          │
 ├────────────────────────────────────┤
-│    (customer_churn_info-la eyni)   │
-│    FK constraint YOX               │
-│    (Xarici mənbə üçün)             │
+│    (Same as customer_churn_info)   │
+│    No FK constraint                │
+│    (For external sources)          │
 └────────────────────────────────────┘
 ```
 
 ---
 
-## 📋 Analitik Tapşırıqlar (17 Query)
+## 📋 Analytical Tasks (17 Queries)
 
-Skriptdə aşağıdakı analitik sorguların **3–4 versiyası** həyata keçirilir (müxtəlif texnikalarla):
+The script implements **3–4 versions** of each analytical task (with different techniques):
 
 ### ✅ Task 1-4: DDL & Data Management
-- **Task 1-2:** Cədvəllərin yaradılması, constraint-lərin qurulması
-- **Task 3:** MERGE — `updated_list` ilə `customer_churn_info` sinxronizasiyası
-- **Task 4:** `max_cre_amount` sütununun əlavə edilməsi və manual UPDATE-lər
+- **Task 1-2:** Table creation, constraint configuration
+- **Task 3:** MERGE — Synchronization of `updated_list` with `customer_churn_info`
+- **Task 4:** Adding `max_cre_amount` column and manual UPDATEs
 
-### ✅ Task 5: Gender üzrə Churn Analizi
-**Sual:** Hansi cinsdən müştərilər daha çox bankı tərk edir?
+### ✅ Task 5: Gender-Based Churn Analysis
+**Question:** Which gender churns more from the bank?
 
 ```sql
 SELECT ci.gender,
@@ -168,54 +168,54 @@ GROUP BY ci.gender
 ORDER BY churn_count DESC;
 ```
 
-**Texnika:** Window Function (SUM OVER)
+**Technique:** Window Function (SUM OVER)
 
 ---
 
-### ✅ Task 6: Churn Etməyənlər Arasında Ən Az Maaş Alan
-**Sual:** Ən az maaş alan müştəridən sonra gələn 3 müştəri (2-4 mövqe)
+### ✅ Task 6: Lowest Salary Among Non-Churned Customers
+**Question:** The 3 customers following the lowest-paid (positions 2-4)
 
-**Texnika:** ROW_NUMBER() OVER (ORDER BY salary ASC), BETWEEN 2 AND 4
-
----
-
-### ✅ Task 7: Ölkə üzrə Churn Top 10
-**Sual:** Hansı 10 ölkədə ən çox churn olmuşdur?
-
-**Texnika:** DENSE_RANK() OVER (ORDER BY COUNT DESC), Composite Index
-
-**Performans:** 0.031 saniyə (Composite index əlçatanlığında)
+**Technique:** ROW_NUMBER() OVER (ORDER BY salary ASC), BETWEEN 2 AND 4
 
 ---
 
-### ✅ Task 8: Churn Etmiş Müştərilərin Yüksək Balanslı Top 10
-**Sual:** Bankı tərk edən müştərilər arasında ən yüksək balansa sahib 10 müştəri
+### ✅ Task 7: Top 10 Countries by Churn
+**Question:** Which 10 countries have the highest churn?
 
-**Texnika:** DENSE_RANK() (bytes optimallaşdırılması)
+**Technique:** DENSE_RANK() OVER (ORDER BY COUNT DESC), Composite Index
 
----
-
-### ✅ Task 9: Maaş üzrə RANK Sıralaması
-**Texnika:** RANK() — eyni maaş → eyni rank, sonrakı dəyər atlanır
+**Performance:** 0.031 seconds (with composite index)
 
 ---
 
-### ✅ Task 10: Balans üzrə DENSE_RANK Sıralaması
-**Texnika:** DENSE_RANK() — eyni balans → eyni rank, sonrakı dəyər ATLANMIR
+### ✅ Task 8: Top 10 Churned Customers with High Balance
+**Question:** The 10 customers who left the bank with the highest balances
+
+**Technique:** DENSE_RANK() (bytes optimization)
 
 ---
 
-### ✅ Task 11: Ölkə üzrə Yaş Sıralaması
-**Sual:** Hər ölkə üçün müştərilər yaşa görə sıralanır (ROW_NUMBER)
-
-**Texnika:** ROW_NUMBER() OVER (PARTITION BY country ORDER BY age ASC)
-
-**Performans:** 0.056 saniyə
+### ✅ Task 9: Salary-Based RANK Ordering
+**Technique:** RANK() — Same salary → Same rank, next value skipped
 
 ---
 
-### ✅ Task 12: LAG — Balans Fərqi
-**Sual:** Hər müştərinin balansi ilə əvvəlkisinin balansi arasındakı fərq
+### ✅ Task 10: Balance-Based DENSE_RANK Ordering
+**Technique:** DENSE_RANK() — Same balance → Same rank, next value NOT skipped
+
+---
+
+### ✅ Task 11: Age Ranking by Country
+**Question:** Customers ranked by age within each country (ROW_NUMBER)
+
+**Technique:** ROW_NUMBER() OVER (PARTITION BY country ORDER BY age ASC)
+
+**Performance:** 0.056 seconds
+
+---
+
+### ✅ Task 12: LAG — Balance Difference
+**Question:** Difference between each customer's balance and the previous one
 
 ```sql
 SELECT cci.customer_id,
@@ -227,45 +227,45 @@ FROM customer_churn_info cci;
 
 ---
 
-### ✅ Task 13: LEAD — Maaş Fərqi
-**Sual:** Hər müştərinin maaşı ilə sonrakının maaşı arasındakı fərq
+### ✅ Task 13: LEAD — Salary Difference
+**Question:** Difference between each customer's salary and the next one
 
-**Texnika:** LEAD(salary, 1, NULL) OVER (ORDER BY salary)
-
----
-
-### ✅ Task 14 (1): Aktiv Müştərilerin Tenure Sıralaması
-**Texnika:** ROW_NUMBER() WHERE active_member = 1
-
-**Performans:** 0.031 saniyə
+**Technique:** LEAD(salary, 1, NULL) OVER (ORDER BY salary)
 
 ---
 
-### ✅ Task 14 (2): Ölkə üzrə Churn Etmiş Müştərilərin Balans Sıralaması
-**Texnika:** DENSE_RANK() OVER (PARTITION BY country ORDER BY balance DESC)
+### ✅ Task 14 (1): Tenure Ranking of Active Customers
+**Technique:** ROW_NUMBER() WHERE active_member = 1
+
+**Performance:** 0.031 seconds
 
 ---
 
-### ✅ Task 15: Credit Score Dəyişimi Analizi
-**Sual:** Mütləq customer_id sırasında kredit skorunun dəyişməsi
-
-**Texnika:** LAG(credit_score) OVER (ORDER BY customer_id)
+### ✅ Task 14 (2): Balance Ranking of Churned Customers by Country
+**Technique:** DENSE_RANK() OVER (PARTITION BY country ORDER BY balance DESC)
 
 ---
 
-### ✅ Task 16: Hər Ölkədə Top 3 Balanslı Müştəri
-**Texnika:** ROW_NUMBER() OVER (PARTITION BY country ...) WHERE row_num ≤ 3
+### ✅ Task 15: Credit Score Change Analysis
+**Question:** Credit score changes ordered by customer_id
+
+**Technique:** LAG(credit_score) OVER (ORDER BY customer_id)
 
 ---
 
-### ✅ Task 17: Products Number Fərqləri
-**Texnika:** LEAD(products_number) — sonrakı məhsul sayı ilə fərq
+### ✅ Task 16: Top 3 Customers by Balance Per Country
+**Technique:** ROW_NUMBER() OVER (PARTITION BY country ...) WHERE row_num ≤ 3
 
 ---
 
-## ⚙️ MERGE Operasiyası (Task 3)
+### ✅ Task 17: Products Number Differences
+**Technique:** LEAD(products_number) — Difference with next product count
 
-**Məqsəd:** Xarici datasource (`updated_list`) ilə `customer_churn_info` sinxronize etmək
+---
+
+## ⚙️ MERGE Operation (Task 3)
+
+**Purpose:** Synchronize `customer_churn_info` with external datasource (`updated_list`)
 
 ```sql
 MERGE INTO customer_churn_info tgt
@@ -282,10 +282,10 @@ WHEN NOT MATCHED THEN
     VALUES (src.customer_id, src.credit_score, ...);
 ```
 
-**Qayda:**
-- Müştəri artıq varsa → **UPDATE** (balance, churn)
-- Müştəri yoxdursa → **INSERT** (yeni müştəri əlavə et)
-- **FK Violation Qarşısı:** Yeni customer_id əvvəlcə `customer_info`-ya insert edilməlidir
+**Rules:**
+- If customer exists → **UPDATE** (balance, churn)
+- If customer doesn't exist → **INSERT** (add new customer)
+- **Prevent FK Violation:** New customer_id must first be inserted into `customer_info`
 
 ```sql
 INSERT INTO customer_info (customer_id, name, surname, gender, age, country)
@@ -300,37 +300,37 @@ WHERE NOT EXISTS (
 
 ## 📊 Excel Dataset (XLSX)
 
-Fayldı: **`sql Bank Customer Churn Prediction _lst.xlsx`**
+**File:** **`sql Bank Customer Churn Prediction _lst.xlsx`**
 
-**İçində 3 Sheet olması gözlənilir:**
+**Expected 3 Sheets:**
 
-| Sheet | Sütunlar | Uyğun Cədvəl |
-|-------|----------|-------------|
+| Sheet | Columns | Corresponding Table |
+|-------|---------|-------------------|
 | **sheet1** | customer_id, name, surname, gender, age, job, marital, education, country | `customer_info` |
 | **sheet2** | customer_id, credit_score, tenure, balance, products_number, credit_card, active_member, estimated_salary, churn | `customer_churn_info` |
-| **sheet3** | (Eyni customer_churn_info sütunları) | `updated_list` (MERGE-də istifadə) |
+| **sheet3** | (Same as customer_churn_info columns) | `updated_list` (used in MERGE) |
 
-**Məlumat Həcmi:** ~10,000 sıra hər cədvəl üçün
+**Data Volume:** ~10,000 rows per table
 
 ---
 
-## 🚀 Qurulum və İcra Addımları
+## 🚀 Setup and Execution Steps
 
-### 1️⃣ Mühit Hazırlığı
+### 1️⃣ Environment Preparation
 ```
 ✓ Oracle Database (11g, 12c, 19c, 21c)
 ✓ SQL Developer / SQL*Plus / Toad
 ✓ XLSX Import tool (SQL Developer / SQL*Loader)
 ```
 
-### 2️⃣ Cədvəllərin Yaradılması
+### 2️⃣ Create Tables
 ```sql
--- Açın: PROJECT MAIN.sql
--- Run et: DDL bölmə (TABLE CREATE, INDEX, COMMENT)
+-- Open: PROJECT MAIN.sql
+-- Run: DDL section (TABLE CREATE, INDEX, COMMENT)
 ```
 
 ### 3️⃣ Data Import
-**Seçim A — SQL Developer GUI:**
+**Option A — SQL Developer GUI:**
 ```
 Table → Import Data → Select XLSX file
 ↓
@@ -339,53 +339,53 @@ Column Mapping (XLSX column → DB column)
 Insert / Update Rows
 ```
 
-**Seçim B — SQL*Loader (CLI):**
+**Option B — SQL*Loader (CLI):**
 ```bash
-# XLSX → CSV çevir
-# control_file.ctl yaratır
+# Convert XLSX → CSV
+# Create control_file.ctl
 # sqlload paramfile=control_file.ctl
 ```
 
-### 4️⃣ MERGE Operasiyasını İcra Et
+### 4️⃣ Execute MERGE Operation
 ```sql
--- MERGE Task 3-ü çalıştırın
+-- Run MERGE Task 3
 -- MERGE INTO customer_churn_info ...
--- (Yeni/yenilənmiş məlumatlar sinxron edilir)
+-- (New/updated data is synchronized)
 ```
 
-### 5️⃣ Analitik Queries
+### 5️⃣ Run Analytical Queries
 ```sql
--- Task 5-17 queries-ərini icra et
--- Hər bir Task-ın 2-3 versiyası mövcud (performance müqayisəsi)
+-- Execute Task 5-17 queries
+-- Multiple versions available per task (for performance comparison)
 SELECT * FROM customer_info;
 SELECT * FROM customer_churn_info;
--- ... və s.
+-- ... and more
 ```
 
 ---
 
-## 🔍 Index Stratejiyası
+## 🔍 Index Strategy
 
-**Məqsəd:** OLAP queries-lərin performansını artırmaq
+**Purpose:** Improve OLAP query performance
 
-### Cədvəl 1: `customer_info`
-| Index Adı | Sütunlar | Istifadə Məqsədi |
-|-----------|----------|-----------------|
+### Table 1: `customer_info`
+| Index Name | Columns | Use Case |
+|-----------|---------|----------|
 | `pk_customer_info` | customer_id | Primary Key |
-| `idx_cust_country_gender` | (country, gender) | WHERE country=X AND gender=Y axtarış |
+| `idx_cust_country_gender` | (country, gender) | WHERE country=X AND gender=Y search |
 | `idx_cust_age` | age | ORDER BY age, BETWEEN age queries |
 
-### Cədvəl 2: `customer_churn_info`
-| Index Adı | Sütunlar | Istifadə Məqsədi |
-|-----------|----------|-----------------|
+### Table 2: `customer_churn_info`
+| Index Name | Columns | Use Case |
+|-----------|---------|----------|
 | `pk_churn_info` | customer_id | Primary Key |
-| `idx_churn_flag` | churn | WHERE churn = 1 (~50% sorguları) |
+| `idx_churn_flag` | churn | WHERE churn = 1 (~50% of queries) |
 | `idx_active_member` | active_member | WHERE active_member = 1 |
 | `idx_salary` | estimated_salary | ORDER BY, TOP N |
 | `idx_balance` | balance | ORDER BY balance DESC, TOP 10 |
-| `idx_churn_balance` | **(churn, balance DESC)** | **TOP 10 churn-ed customers (composite)** |
+| `idx_churn_balance` | **(churn, balance DESC)** | **TOP 10 churned customers (composite)** |
 
-**Execution Plan Misal:**
+**Execution Plan Example:**
 ```
 Task 8 Query (Top 10 High Balance Churned Customers):
 ├─ Full Table Scan customer_churn_info (1500 rows)
@@ -397,55 +397,55 @@ Task 8 Query (Top 10 High Balance Churned Customers):
 
 ---
 
-## 📌 Constraint-lər (Data Integriteyi)
+## 📌 Constraints (Data Integrity)
 
 ### PRIMARY KEY Constraints
-- `pk_customer_info` → customer_id unikal
-- `pk_churn_info` → customer_id unikal
-- `pk_updated_list` → customer_id unikal
+- `pk_customer_info` → customer_id unique
+- `pk_churn_info` → customer_id unique
+- `pk_updated_list` → customer_id unique
 
 ### FOREIGN KEY Constraints
 - **`fk_churn_customer`** → customer_churn_info.customer_id → customer_info.customer_id
-  - **Aktion:** ON DELETE CASCADE (müştəri silinərsə, churn məlumatı da silinir)
+  - **Action:** ON DELETE CASCADE (if customer deleted, churn data deleted too)
 
 ### CHECK Constraints
 
-| Constraint | Qayda | Məqsəd |
-|-----------|-------|--------|
-| `chk_gender` | gender IN ('M', 'F') | Cins yalnız M/F |
-| `chk_age` | age BETWEEN 18 AND 100 | Yaş 18-100 |
-| `chk_marital` | marital IN ('married', 'single', 'divorced') | Ailə vəziyyəti tənzimlənib |
-| `chk_education` | education IN ('primary',...) | Təhsil səviyyəsi tənzimlənib |
-| `chk_credit_score` | credit_score BETWEEN 300 AND 850 | FICO balı standart |
-| `chk_balance` | balance >= 0 | Mənfi balans yoxdur |
-| `chk_products_number` | products_number BETWEEN 1 AND 4 | 1-4 məhsul |
+| Constraint | Rule | Purpose |
+|-----------|------|---------|
+| `chk_gender` | gender IN ('M', 'F') | Gender limited to M/F |
+| `chk_age` | age BETWEEN 18 AND 100 | Age 18-100 only |
+| `chk_marital` | marital IN ('married', 'single', 'divorced') | Marital status defined |
+| `chk_education` | education IN ('primary',...) | Education level defined |
+| `chk_credit_score` | credit_score BETWEEN 300 AND 850 | FICO score standard |
+| `chk_balance` | balance >= 0 | No negative balance |
+| `chk_products_number` | products_number BETWEEN 1 AND 4 | 1-4 products |
 | `chk_credit_card` | credit_card IN (0, 1) | Binary flag |
 | `chk_active_member` | active_member IN (0, 1) | Binary flag |
 | `chk_churn` | churn IN (0, 1) | Binary flag |
-| `chk_max_cre_amount` | max_cre_amount IS NULL OR >= 0 | Mənfi olmayan məbləğ |
+| `chk_max_cre_amount` | max_cre_amount IS NULL OR >= 0 | Non-negative amount |
 
 ---
 
-## 🔐 SEQUENCE-lər (Audit & Transaction IDs)
+## 🔐 SEQUENCES (Audit & Transaction IDs)
 
-Skriptdə 3 SEQUENCE yaradılır (audit log, transaction tracking üçün):
+The script creates 3 SEQUENCEs for audit log and transaction tracking:
 
 ```sql
--- 1. Transaction ID Generator (1 billion+ ID qabiliyyəti)
+-- 1. Transaction ID Generator (capable of 1 billion+ IDs)
 CREATE SEQUENCE seq_transaction_id
 START WITH 1000000001
 INCREMENT BY 1
 CACHE 100
 NOCYCLE;
 
--- 2. Audit Log ID (Dəyişiklik tarixçəsi)
+-- 2. Audit Log ID (Change history)
 CREATE SEQUENCE seq_audit_id
 START WITH 1
 INCREMENT BY 1
 CACHE 50
 NOCYCLE;
 
--- 3. Loan Application ID (Kredit müraciətləri)
+-- 3. Loan Application ID (Credit applications)
 CREATE SEQUENCE seq_loan_id
 START WITH 100000
 INCREMENT BY 1
@@ -453,7 +453,7 @@ CACHE 20
 NOCYCLE;
 ```
 
-**İstifadə:**
+**Usage:**
 ```sql
 INSERT INTO transaction_log (transaction_id, ...)
 VALUES (seq_transaction_id.NEXTVAL, ...);
@@ -461,37 +461,37 @@ VALUES (seq_transaction_id.NEXTVAL, ...);
 
 ---
 
-## 📊 Query Performance Analizi
+## 📊 Query Performance Analysis
 
-**Məqsəd:** Hər Task-ın performance xüsusiyyətlərini müqayisə etmək
+**Purpose:** Compare performance characteristics of each task
 
-### Task 7 — Top 10 Ölkə (3 Versiya Müqayisəsi)
+### Task 7 — Top 10 Countries (3 Version Comparison)
 
-| Versiya | Texnika | Performance | Memory | Bytes |
-|---------|---------|-----------|---------|-------|
+| Version | Technique | Performance | Memory | Bytes |
+|---------|-----------|-----------|---------|-------|
 | **Best ✓** | DENSE_RANK() | 0.031 sec | ~500 KB | ~1000 |
 | **Medium** | ROW_NUMBER() | 0.041 sec | ~600 KB | ~1200 |
 | **Poor** | ROWNUM / FETCH | 0.045 sec | ~800 KB | ~1400 |
 
-### Task 11 — Ölkə üzrə Yaş Sıralaması
+### Task 11 — Age Ranking by Country
 
-| Versiya | ORDER | Performance |
+| Version | ORDER | Performance |
 |---------|-------|-----------|
 | Query 1 | BY country, age_row_num | **0.056 sec** ✓ |
 | Query 2 | BY country (FROM clause) | 0.064 sec |
 
-**Nəticə:** Window Function ORDER-u ORDER BY-dən daha səmərəlidir
+**Conclusion:** Window Function ORDER is more efficient than ORDER BY
 
 ---
 
 ## 🛠️ Troubleshooting & Tips
 
 ### ❌ Problem: FK Violation (ORA-02291)
-**Səbəb:** `updated_list`-də olan customer_id `customer_info`-da yoxdur
+**Cause:** customer_id in `updated_list` does not exist in `customer_info`
 
-**Həll:**
+**Solution:**
 ```sql
--- Mətin script-inin əvvəlində çalışır:
+-- Runs at beginning of script:
 INSERT INTO customer_info (customer_id, name, surname, gender, age, country)
 SELECT ul.customer_id, 'Unknown', 'Unknown', 'M', 18, 'Unknown'
 FROM updated_list ul
@@ -502,24 +502,24 @@ WHERE NOT EXISTS (
 
 ---
 
-### ❌ Problem: MERGE Heç Bir Sıra UPDATE Etmir
-**Səbəb:** Sütun adları fərqlənir (`tgt.` prefix yoxdur)
+### ❌ Problem: MERGE Does Not Update Any Rows
+**Cause:** Column names differ (missing `tgt.` prefix)
 
-**Düzəliş:**
+**Fix:**
 ```sql
--- ✓ DOĞRU:
+-- ✓ CORRECT:
 UPDATE SET tgt.balance = src.balance
 
--- ✗ YANLIŞ:
+-- ✗ WRONG:
 UPDATE SET balance = src.balance
 ```
 
 ---
 
-### ❌ Problem: Index İstifadə Olunmur (FULL TABLE SCAN)
-**Səbəb:** Query optimizer index seçəkdə əngəl (mislə, implicit conversion)
+### ❌ Problem: Index Not Used (FULL TABLE SCAN)
+**Cause:** Query optimizer skips index (e.g., implicit conversion)
 
-**Həll:** EXPLAIN PLAN istifadə et
+**Solution:** Use EXPLAIN PLAN
 ```sql
 EXPLAIN PLAN FOR
 SELECT * FROM customer_churn_info
@@ -532,10 +532,10 @@ SELECT * FROM TABLE(DBMS_XPLAN.DISPLAY);
 
 ---
 
-### ❌ Problem: MERGE-dən Sonra Cədvəl Boş
-**Səbəb:** UPDATED_LIST boş, və ya ON condition heç vaxt MATCHED olmadı
+### ❌ Problem: Table Empty After MERGE
+**Cause:** UPDATED_LIST empty, or ON condition never MATCHED
 
-**Həll:**
+**Solution:**
 ```sql
 SELECT COUNT(*) FROM updated_list;
 SELECT COUNT(*) FROM customer_churn_info WHERE customer_id IN (
@@ -545,14 +545,14 @@ SELECT COUNT(*) FROM customer_churn_info WHERE customer_id IN (
 
 ---
 
-## 🔧 Performance Tuning Önerisi
+## 🔧 Performance Tuning Recommendations
 
-1. **Histogram/Stats Yenilə:**
+1. **Refresh Histogram/Stats:**
    ```sql
    ANALYZE TABLE customer_churn_info COMPUTE STATISTICS;
    ```
 
-2. **Index Fragmentation Yoxla:**
+2. **Check Index Fragmentation:**
    ```sql
    SELECT index_name, leaf_blocks FROM user_indexes
    WHERE table_name = 'CUSTOMER_CHURN_INFO';
@@ -563,16 +563,16 @@ SELECT COUNT(*) FROM customer_churn_info WHERE customer_id IN (
    EXEC DBMS_STATS.GATHER_TABLE_STATS('HR', 'CUSTOMER_CHURN_INFO');
    ```
 
-4. **Caching Layer (Redis/Memcached):** Top 10 queries üçün nəzarə edin
+4. **Caching Layer (Redis/Memcached):** Consider for Top 10 queries
 
 ---
 
-## 🏆 SQL Texnikalarının Xülasəsi
+## 🏆 SQL Techniques Summary
 
-Bu layihədə istifadə olunan **17 mühüm texnika:**
+**17 key techniques** used in this project:
 
-| # | Texnika | Nümunə Task | Qiymətləndirmə |
-|---|---------|-------------|-------|
+| # | Technique | Example Task | Rating |
+|---|-----------|-------------|--------|
 | 1 | CREATE TABLE + Constraints | Task 1-2 | ⭐⭐⭐⭐⭐ |
 | 2 | Primary/Foreign Key | Task 1-3 | ⭐⭐⭐⭐⭐ |
 | 3 | CHECK Constraints | Task 1-2 | ⭐⭐⭐⭐ |
@@ -593,52 +593,52 @@ Bu layihədə istifadə olunan **17 mühüm texnika:**
 
 ---
 
-## 📚 Əlavə Resurslar
+## 📚 Additional Resources
 
 - **Oracle SQL Reference:** [docs.oracle.com](https://docs.oracle.com/en/database/oracle/oracle-database/)
 - **Window Functions Guide:** [Oracle Analytics Functions](https://docs.oracle.com/cd/B19306_01/server.102/b14200/functions004.htm)
-- **MERGE Operasiyası:** [MERGE INTO Documentation](https://docs.oracle.com/en/database/oracle/oracle-database/)
-- **Performance Tuning:** `EXPLAIN PLAN FOR` və `DBMS_XPLAN`
+- **MERGE Operation:** [MERGE INTO Documentation](https://docs.oracle.com/en/database/oracle/oracle-database/)
+- **Performance Tuning:** `EXPLAIN PLAN FOR` and `DBMS_XPLAN`
 
 ---
 
-## 👨‍💼 Müəllif
+## 👨‍💼 Author
 
 **Mahammad Rasulov** ([GitHub](https://github.com/MahammadRasulovv))
 
-**Layihə Tarixi:** 2024-2025  
-**Versiya:** 1.0 (Final)  
-**Dil:** Azerbaycanca (Documentation) | SQL (Kod)
+**Project Timeline:** 2024-2025  
+**Version:** 1.0 (Final)  
+**Languages:** English (Documentation) | SQL (Code)
 
 ---
 
-## 📝 Sürüm Tarixçəsi
+## 📝 Version History
 
-| Versiya | Tarix | Dəyişikliklər |
-|---------|-------|--------------|
-| **1.0** | 2025-05-26 | Ətraflı README yazıldı, 17 analitik task əlavə edildi |
-
----
-
-## 🤝 Tövsiyə olunan İstifadə Halları
-
-✅ **Öyrənmə Məqsədləri:**
-- Oracle SQL advanced texnikalarını praktiki şəkildə öyrən
-- Window Functions-un real dünya tətbiqini gör
-- MERGE operasiyasının əsaslarını əldə et
-
-✅ **Portfolio Layihəsi:**
-- SQL Development interviews-ə hazırlıq
-- Database Design əngəllərini dərinləş
-- Performance optimization texnikalarını tətbiq et
-
-✅ **Prototip & PoC:**
-- Bank churn modeling-i sadə formada
-- Müşəri segmentasiyası analitikası
-- Risk assessment modeli
+| Version | Date | Changes |
+|---------|------|---------|
+| **1.0** | 2025-05-30 | Complete README rewritten in English with 17 analytical tasks |
 
 ---
 
-**Sonda qeyd:** Bu layihə tamamilə məlumatdır (demo data ilə). Real bank sistemləri üçün ek security, encryption, audit logging, role-based access control (RBAC) tələb olunur.
+## 🤝 Recommended Use Cases
 
-🎓 **Uğurlar Öyrənməkdə!** 📊
+✅ **Learning Purposes:**
+- Learn advanced Oracle SQL techniques practically
+- See real-world application of Window Functions
+- Master MERGE operation fundamentals
+
+✅ **Portfolio Project:**
+- Prepare for SQL Development interviews
+- Deepen Database Design skills
+- Apply performance optimization techniques
+
+✅ **Prototype & PoC:**
+- Bank churn modeling in simplified form
+- Customer segmentation analytics
+- Risk assessment model
+
+---
+
+**Final Note:** This project contains purely instructional data (demo data). Real banking systems require additional security, encryption, audit logging, and role-based access control (RBAC).
+
+🎓 **Good luck with your learning!** 📊
